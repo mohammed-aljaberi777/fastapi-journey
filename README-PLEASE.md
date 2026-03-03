@@ -23,19 +23,19 @@ Each lab folder contains practice files — read the comments inside each `.py` 
 Each lab must be worked on its **own branch**. Branch names follow this format:
 
 ```
-firstinitial+surname-lab1
+firstinitial+surname-lab2
 firstinitial+surname-lab2
 ```
 
 Use the **first letter of your first name** followed by your **surname** — no spaces, all lowercase.
 
-**Example:** John Snow → `jsnow-lab1` · `jsnow-lab2`
+**Example:** John Snow → `jsnow-lab2` · `jsnow-lab2`
 
 > ⚠️ Do not work on the `main` branch. Do not use spaces or capital letters in branch names.
 
 To create and switch to your branch:
 ```bash
-git checkout -b jsnow-lab1
+git checkout -b jsnow-lab2
 ```
 
 ---
@@ -46,25 +46,25 @@ After you finish **each practice**, stage and commit that file on its own. Do no
 
 ```bash
 # After finishing practice1.py
-git add lab1/practice1.py
-git commit -m "lab1: complete practice 1"
+git add lab2/practice1.py
+git commit -m "lab2: complete practice 1"
 
 # After finishing practice2.py
-git add lab1/practice2.py
-git commit -m "lab1: complete practice 2"
+git add lab2/practice2.py
+git commit -m "lab2: complete practice 2"
 
 # After finishing practice3.py
-git add lab1/practice3.py
-git commit -m "lab1: complete practice 3"
+git add lab2/practice3.py
+git commit -m "lab2: complete practice 3"
 
 # After finishing practice4.py
-git add lab1/practice4.py
-git commit -m "lab1: complete practice 4"
+git add lab2/practice4.py
+git commit -m "lab2: complete practice 4"
 ```
 
 When you are done with all practices, push your branch:
 ```bash
-git push origin jsnow-lab1
+git push origin jsnow-lab2
 ```
 
 ---
@@ -75,7 +75,7 @@ Once your branch is pushed, copy the URL of your branch from GitHub and submit i
 
 The link should look like this:
 ```
-https://github.com/<your-username>/<repo-name>/tree/jsnow-lab1
+https://github.com/<your-username>/<repo-name>/tree/jsnow-lab2
 ```
 
 
@@ -90,7 +90,7 @@ This is a **Pass or Fail** assignment — you either receive the **full grade or
 | # | Criteria | Details |
 |---|----------|---------|
 | 1 | **All TODOs completed** | Every `# TODO` in every practice file must be fully implemented and working |
-| 2 | **Correct branch & commits** | Branch must follow the `jsnow-lab1` naming format, and each practice must have its own separate commit |
+| 2 | **Correct branch & commits** | Branch must follow the `jsnow-lab2` naming format, and each practice must have its own separate commit |
 | 3 | **No AI-generated code** | Code must be written by you. AI-assisted submissions will result in a zero and be reported |
 
 ### ❌ You will automatically fail if:
