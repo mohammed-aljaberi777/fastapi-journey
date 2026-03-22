@@ -2,6 +2,8 @@ from fastapi import APIRouter,HTTPException
 from typing import List 
 import asyncio
 from models import Book 
+from fastapi import status 
+
 
 book_router = APIRouter()
 
@@ -20,8 +22,13 @@ async def get_book(book_id:int):
   raise HTTPException(status_code=404, detail="Book not found")
   
 
-@book_router.post("/books/")
+@book_router.post("/books/",status_code=status.HTTP_201_CREATED)
 async def add_book(book:Book):
+  for b in books:
+     if b.id == book.id:
+        raise HTTPException(status_code=400,detail="Book exists")
+
+
   books.append(book)
   return {"message": "Book added successfully", "book": book}
 
