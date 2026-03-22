@@ -1,0 +1,84 @@
+<!-- TODO: This file must be named book.html and placed inside mini-project-1/templates/ -->
+
+{% extends "home.html" %}
+
+<!-- TODO: Block name must match home.html exactly — keep as book_container -->
+{% block book_container %}
+
+<main class="container">
+    <hr>
+
+    <!-- ─── ADD FORM ─────────────────────────────────────────────────────── -->
+    <section class="container-fluid mb-4">
+        <form method="post">
+            <div class="input-group">
+                <input
+                    class="form-control"
+                    type="text"
+                    name="item"
+                    aria-label="Add a book"
+                    placeholder="Enter book title"
+                    value="{{ item }}"
+                />
+                <div class="input-group-append">
+                    <button class="btn btn-success" type="submit">
+                        <i class="fas fa-book mr-1"></i> Add Book
+                    </button>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <!-- ─── SINGLE ITEM VIEW ─────────────────────────────────────────────
+         TODO: field names must match your Book Pydantic model exactly.
+         Expected fields: book.id, book.title, book.author, book.pages
+         Add or remove <p> rows to match your actual model fields.         -->
+
+    {% if book %}
+    <article class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="fas fa-book-open mr-2"></i>Book Details</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>ID:</strong> {{ book.id }}</p>
+            <p><strong>Title:</strong> {{ book.title }}</p>
+            <p><strong>Author:</strong> {{ book.author }}</p>
+            <p><strong>Pages:</strong> {{ book.pages }}</p>
+
+            <!-- TODO: If your Book model has nested BorrowRecords, display count here -->
+            <p><strong>Borrow Records:</strong> {{ book.borrow_records | length }} on record</p>
+
+            <a href="/home" class="btn btn-outline-secondary btn-sm mt-2">
+                <i class="fas fa-arrow-left mr-1"></i> Back to list
+            </a>
+        </div>
+    </article>
+
+    {% else %}
+
+    <!-- ─── LIST VIEW ────────────────────────────────────────────────────
+         TODO: Loop variable is "book", list variable is "books"
+               Link href must be /book/{{ book.id }}                       -->
+    <section class="container-fluid">
+        <h2 class="text-center mb-3">
+            <i class="fas fa-list mr-2"></i>All Books
+        </h2>
+        <div class="card shadow-sm">
+            <ul class="list-group list-group-flush">
+                {% for book in books %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        <span class="badge badge-success badge-pill mr-2">{{ loop.index }}</span>
+                        <a href="/book/{{ book.id }}">{{ book.title }}</a>
+                    </span>
+                    <span class="text-muted small">{{ book.author }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    </section>
+
+</main>
+
+{% endblock %}

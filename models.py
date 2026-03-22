@@ -20,8 +20,8 @@ class BorrowRecord(BaseModel):
 # primary en
 class Book(BaseModel):
   id : int = Field(gt=0)
-  title : str = Field(min_length = 2, max_lengeth =50)
-  author : str = Field(min_length = 2, max_lengeth =50)
+  title : str = Field(min_length = 2, max_length =50)
+  author : str = Field(min_length = 2, max_length =50)
   year : int = Field(ge=1940,le=2026)
   copies : int = Field(ge=1)
   borrow_records: List[BorrowRecord] = []
