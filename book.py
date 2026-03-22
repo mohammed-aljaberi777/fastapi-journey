@@ -1,13 +1,19 @@
-from fastapi import APIRouter,HTTPException
+from fastapi import APIRouter,HTTPException,Request
 from typing import List 
 import asyncio
 from models import Book 
 from fastapi import status 
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 
 book_router = APIRouter()
 
+templates = Jinja2Templates(directory="templates")
+
 books: List[Book] = []
+
+
 
 @book_router.get("/books/")
 async def get_books():
@@ -48,6 +54,26 @@ async def delete_book(book_id: int):
         if book.id == book_id:
             deleted = books.pop(index)
             return {"message": "Book deleted", "book": deleted}
+
+    raise HTTPException(status_code=404, detail="Book not found")
+
+
+@book_router.get("/home", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("home.html", {
+        "request": request,
+        "books": books
+    })
+
+
+@book_router.get("/book/{book_id}", response_class=HTMLResponse)
+async def get_book_page(request: Request, book_id: int):
+    for book in books:
+        if book.id == book_id:
+            return templates.TemplateResponse("book.html", {
+                "request": request,
+                "book": book
+            })
 
     raise HTTPException(status_code=404, detail="Book not found")
     

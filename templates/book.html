@@ -43,7 +43,8 @@
             <p><strong>ID:</strong> {{ book.id }}</p>
             <p><strong>Title:</strong> {{ book.title }}</p>
             <p><strong>Author:</strong> {{ book.author }}</p>
-            <p><strong>Pages:</strong> {{ book.pages }}</p>
+            <p><strong>Year:</strong> {{ book.year }}</p>
+            <p><strong>Copies:</strong> {{ book.copies }}</p>
 
             <!-- TODO: If your Book model has nested BorrowRecords, display count here -->
             <p><strong>Borrow Records:</strong> {{ book.borrow_records | length }} on record</p>

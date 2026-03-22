@@ -50,19 +50,53 @@
     <!-- TODO: Change the icon emoji and system name -->
     <nav class="app-navbar">
         <div class="container">
-            <h1 class="text-center">📚 Library Management System</h1>
+            <h1 class="text-center"> my Library </h1>
         </div>
     </nav>
 </header>
 
 <div class="container mt-4">
     <!-- TODO: Do NOT rename this block — it must stay as book_container -->
-    {% block book_container %}{% endblock %}
+    {% block book_container %}
+
+<h2 class="mb-4">Books List</h2>
+
+{% if books %}
+    {% for book in books %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+
+                <h5 class="card-title">{{ book.title }}</h5>
+
+                <p><strong>ID:</strong> {{ book.id }}</p>
+                <p><strong>Author:</strong> {{ book.author }}</p>
+                <p><strong>Year:</strong> {{ book.year }}</p>
+                <p><strong>Copies:</strong> {{ book.copies }}</p>
+
+                <p><strong>Borrow Records:</strong></p>
+                {% if book.borrow_records %}
+                    <ul>
+                        {% for record in book.borrow_records %}
+                            <li>{{ record }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No borrow records</p>
+                {% endif %}
+
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No books available</p>
+{% endif %}
+    
+    {% endblock %}
 </div>
 
 <!-- TODO: Update footer with your name and student ID -->
 <footer>
-    <p>SFWE477 &mdash; Final International University &mdash; Your Name | Student ID</p>
+    <p>SFWE477 &mdash; Final International University &mdash; Mohammed Saleh Aljaberi | 2003010152</p>
 </footer>
 
 </body>
