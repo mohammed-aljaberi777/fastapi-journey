@@ -19,18 +19,18 @@ class BorrowRecord(BaseModel):
 
 # primary en
 class Book(BaseModel):
-  id : int = Field(gt=0)
+  id : Optional[int] = None
   title : str = Field(min_length = 2, max_length =50)
   author : str = Field(min_length = 2, max_length =50)
   year : int = Field(ge=1940,le=2026)
   copies : int = Field(ge=1)
-  borrow_records: List[BorrowRecord] = []
+  borrow_records: List[BorrowRecord] =  Field(default_factory=list)
 
 
   @model_validator(mode="after")
   def check_year_not_future(self):
     if self.year > 2026:
-      raise ValueError("year can not beee in the future")
+      raise ValueError("year can noooooot beeeeeeee in the future")
     return self 
 
 
