@@ -1,8 +1,11 @@
 
 
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from .models import PollCreate, VoteRequest
 from .storage import store
@@ -14,11 +17,19 @@ APP_NAME = os.getenv("APP_NAME", "Real-Time Polling App")
 
 app = FastAPI(title=APP_NAME)
 
+STATIC_DIR = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
 
 @app.get("/", tags=["meta"])
 def root():
-    return {"app": APP_NAME, "status": "ok"}
+    """Serve the HTML UI."""
+    return FileResponse(STATIC_DIR / "index.html")
 
+
+@app.get("/health", tags=["meta"])
+def health():
+    return {"app": APP_NAME, "status": "ok"}
 
 # ---------------------------------------------------------------------------
 # REST endpoints

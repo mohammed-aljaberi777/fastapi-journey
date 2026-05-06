@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time Polling App</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f1117;
+      color: #e6e6e6;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .container { max-width: 760px; margin: 0 auto; }
+    h1 { font-size: 28px; margin-bottom: 8px; }
+    .subtitle { color: #8a8f98; margin-bottom: 24px; font-size: 14px; }
+    .card {
+      background: #1a1d26;
+      border: 1px solid #2a2e39;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card h2 { font-size: 18px; margin-bottom: 12px; }
+    label { display: block; font-size: 13px; color: #8a8f98; margin-bottom: 6px; }
+    input, button {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #2a2e39;
+      background: #0f1117;
+      color: #e6e6e6;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    button {
+      background: #3b82f6;
+      border-color: #3b82f6;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { background: #2563eb; }
+    button.secondary { background: #2a2e39; border-color: #2a2e39; }
+    button.secondary:hover { background: #353945; }
+    .status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status.connected { background: #14532d; color: #86efac; }
+    .status.disconnected { background: #7f1d1d; color: #fca5a5; }
+    .poll-list { list-style: none; }
+    .poll-list li {
+      padding: 12px;
+      border: 1px solid #2a2e39;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .poll-list li:hover { background: #232631; }
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      padding: 12px;
+      background: #0f1117;
+      border: 1px solid #2a2e39;
+      border-radius: 8px;
+    }
+    .option-text { flex: 1; font-weight: 500; }
+    .option-votes {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      color: #60a5fa;
+      min-width: 40px;
+      text-align: right;
+    }
+    .option-bar {
+      height: 6px;
+      background: #2a2e39;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .option-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      transition: width 0.3s ease;
+    }
+    .option button {
+      width: auto;
+      margin: 0;
+      padding: 6px 14px;
+      font-size: 13px;
+    }
+    .row { display: flex; gap: 8px; align-items: center; }
+    .row > input { flex: 1; margin: 0; }
+    .row > button { width: auto; margin: 0; padding: 10px 16px; }
+    .hidden { display: none; }
+    .small { font-size: 12px; color: #8a8f98; }
+    .total { margin-top: 12px; padding-top: 12px; border-top: 1px solid #2a2e39; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Real-Time Polling App</h1>
+    <p class="subtitle">FastAPI + WebSockets demo</p>
+
+    <!-- Create poll -->
+    <div class="card">
+      <h2>Create a poll</h2>
+      <label>Question</label>
+      <input id="new-question" placeholder="What's your favourite language?" />
+      <label>Options (comma separated)</label>
+      <input id="new-options" placeholder="Python, JavaScript, Go" />
+      <button onclick="createPoll()">Create poll</button>
+    </div>
+
+    <!-- Polls list -->
+    <div class="card">
+      <h2>All polls</h2>
+      <button class="secondary" onclick="loadPolls()">🔄 Refresh</button>
+      <ul id="polls" class="poll-list"></ul>
+    </div>
+
+    <!-- Active poll view -->
+    <div id="active-card" class="card hidden">
+      <div class="row" style="margin-bottom: 12px;">
+        <h2 id="active-question" style="flex:1; margin:0;"></h2>
+        <span id="ws-status" class="status disconnected">Disconnected</span>
+      </div>
+      <div id="options-container"></div>
+      <div class="total small">Total votes: <strong id="total-votes">0</strong></div>
+      <button class="secondary" onclick="closePoll()" style="margin-top:12px;">Close</button>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    let activePollId = null;
+
+    // ----- REST helpers -----
+    async function loadPolls() {
+      const res = await fetch('/polls');
+      const polls = await res.json();
+      const ul = document.getElementById('polls');
+      ul.innerHTML = '';
+      if (polls.length === 0) {
+        ul.innerHTML = '<li class="small">No polls yet. Create one above.</li>';
+        return;
+      }
+      polls.forEach(p => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${p.question}</strong><br><span class="small">${p.options.length} options · ${p.total_votes} votes</span>`;
+        li.onclick = () => openPoll(p.id);
+        ul.appendChild(li);
+      });
+    }
+
+    async function createPoll() {
+      const question = document.getElementById('new-question').value.trim();
+      const optionsText = document.getElementById('new-options').value.trim();
+      if (!question || !optionsText) return alert('Fill in question and options');
+      const options = optionsText.split(',').map(s => s.trim()).filter(Boolean);
+      if (options.length < 2) return alert('Need at least 2 options');
+
+      const res = await fetch('/polls', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ question, options })
+      });
+      if (!res.ok) return alert('Failed to create poll');
+      document.getElementById('new-question').value = '';
+      document.getElementById('new-options').value = '';
+      await loadPolls();
+    }
+
+    // ----- WebSocket handling -----
+    function openPoll(pollId) {
+      closePoll(); // close any existing connection first
+      activePollId = pollId;
+      document.getElementById('active-card').classList.remove('hidden');
+
+      const wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
+      ws = new WebSocket(`${wsProto}://${location.host}/ws/polls/${pollId}`);
+
+      ws.onopen = () => setStatus(true);
+      ws.onclose = () => setStatus(false);
+      ws.onerror = () => setStatus(false);
+
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'snapshot' || msg.type === 'update') {
+          renderPoll(msg.poll);
+        } else if (msg.type === 'error') {
+          alert('Server: ' + msg.message);
+        }
+      };
+    }
+
+    function closePoll() {
+      if (ws) { ws.close(); ws = null; }
+      activePollId = null;
+      document.getElementById('active-card').classList.add('hidden');
+      setStatus(false);
+    }
+
+    function setStatus(connected) {
+      const s = document.getElementById('ws-status');
+      s.textContent = connected ? 'Connected' : 'Disconnected';
+      s.className = 'status ' + (connected ? 'connected' : 'disconnected');
+    }
+
+    function vote(optionIndex) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) return alert('Not connected');
+      ws.send(JSON.stringify({ type: 'vote', option_index: optionIndex }));
+    }
+
+    function renderPoll(poll) {
+      document.getElementById('active-question').textContent = poll.question;
+      document.getElementById('total-votes').textContent = poll.total_votes;
+      const container = document.getElementById('options-container');
+      const max = Math.max(1, ...poll.options.map(o => o.votes));
+      container.innerHTML = '';
+      poll.options.forEach(opt => {
+        const pct = (opt.votes / max) * 100;
+        const div = document.createElement('div');
+        div.className = 'option';
+        div.innerHTML = `
+          <div style="flex:1;">
+            <div class="row">
+              <span class="option-text">${opt.text}</span>
+              <span class="option-votes">${opt.votes}</span>
+            </div>
+            <div class="option-bar"><div class="option-bar-fill" style="width:${pct}%"></div></div>
+          </div>
+          <button onclick="vote(${opt.index})">Vote</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // initial load
+    loadPolls();
+  </script>
+</body>
+</html>
